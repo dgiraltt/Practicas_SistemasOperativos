@@ -5,8 +5,9 @@
 
 /**
  * Reserva espacio para una variable de tipo struct my_stack.
- * input: size
- * output: puntero a stack, NULL de producirse un error
+ * 
+ * @param size: Valor del tamaño de la data que guardaremos.
+ * @return: Puntero a la pila, NULL de producirse un error.
  */
 struct my_stack *my_stack_init(int size)
 {
@@ -27,8 +28,10 @@ struct my_stack *my_stack_init(int size)
 
 /**
  * Inserta un nuevo nodo en los elementos de la pila.
- * input: stack, data
- * output: EXITO, FALLO de producirse un error
+ * 
+ * @param stack: Pila al que le insertaremos un nuevo elemento.
+ * @param data: Nuevo elemento a insertar.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int my_stack_push(struct my_stack *stack, void *data)
 {
@@ -55,8 +58,9 @@ int my_stack_push(struct my_stack *stack, void *data)
 
 /**
  * Elimina el nodo superior de los elementos de la pila.
- * input: stack
- * output: data
+ * 
+ * @param stack: Pila de la que sacaremos el último elemento.
+ * @return: Data extraída.
  */
 void *my_stack_pop(struct my_stack *stack)
 {
@@ -74,8 +78,9 @@ void *my_stack_pop(struct my_stack *stack)
 
 /**
  * Recorre la pila y retorna el número de nodos totales que hay en los elementos de la pila.
- * input: stack
- * output: length
+ * 
+ * @param stack: Pila que recorreremos.
+ * @return: Tamaño de la pila, el número de nodos que tiene.
  */
 int my_stack_len(struct my_stack *stack)
 {
@@ -94,9 +99,10 @@ int my_stack_len(struct my_stack *stack)
 
 /**
  * Recorre la pila liberando la memoria que habíamos reservado para cada uno de los datos y la de cada nodo.
- * Finalmente libera también la memoria que ocupa el struck my_stack.
- * input: stack
- * output: bytes liberados
+ * Finalmente libera también la memoria que ocupa el struct my_stack.
+ * 
+ * @param stack: Pila que eliminaremos.
+ * @return: Bytes liberados.
  */
 int my_stack_purge(struct my_stack *stack)
 {
@@ -123,8 +129,10 @@ int my_stack_purge(struct my_stack *stack)
 
 /**
  * Almacena los datos de la pila en el fichero indicado por filename.
- * input: stack, filename
- * output: cont (número de elementos almacenados)
+ * 
+ * @param stack: Pila que guardaremos.
+ * @param filename: Nombre del fichero donde almacenaremos la pila.
+ * @return: Número de elementos almacenados en el fichero.
  */
 int my_stack_write(struct my_stack *stack, char *filename)
 {
@@ -189,8 +197,9 @@ int my_stack_write(struct my_stack *stack, char *filename)
 
 /**
  * Lee los datos de la pila almacenados en el fichero indicado por filename.
- * input: filename
- * output: puntero a stack, NULL de producirse un error
+ * 
+ * @param filename: Nombre del fichero del que leeremos la pila.
+ * @return: Puntero a la pila leída, NULL de producirse un error.
  */
 struct my_stack *my_stack_read(char *filename)
 {
@@ -257,8 +266,8 @@ struct my_stack *my_stack_read(char *filename)
 
 /**
  * Imprime por pantalla los datos almacenados en la pila.
- * input: stack
- * output: -
+ * 
+ * @param stack: Pila que mostraremos por consola.
  */
 void my_stack_print(struct my_stack *stack)
 {

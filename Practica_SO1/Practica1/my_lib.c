@@ -9,8 +9,9 @@
 
 /**
  * Devuelve la longitud de la cadena apuntada por str.
- * input: str
- * output: length
+ * 
+ * @param str: Cadena que recorreremos.
+ * @return: Longitud de la cadena
  */
 size_t my_strlen(const char *str)
 {
@@ -26,10 +27,12 @@ size_t my_strlen(const char *str)
 
 
 /**
- * Compara carácter a carácter y cuando encuentra uno diferente reporta el resultado calculado
+ * Compara carácter a carácter y cuando encuentra uno diferente reporta el resultado calculado 
  * como la resta de los códigos ASCII de los caracteres diferentes.
- * input: str1, str2
- * output: resta de los códigos ASCII de los caracteres diferentes
+ * 
+ * @param str1: Cadena 1.
+ * @param str2: Cadena 2.
+ * @return: Resta de los códigos ASCII de los caracteres diferentes.
  */
 int my_strcmp(const char *str1, const char *str2)
 {
@@ -47,8 +50,10 @@ int my_strcmp(const char *str1, const char *str2)
 
 /**
  * Copia la cadena apuntada por src en la memoria apuntada por dest.
- * input: dest, src
- * output: dirección de dest
+ * 
+ * @param dest: Cadena destino.
+ * @param src: Cadena orígen.
+ * @return: Dirección de dest.
  */
 char *my_strcpy(char *dest, const char *src)
 {
@@ -71,8 +76,11 @@ char *my_strcpy(char *dest, const char *src)
 
 /**
  * Copia n caracteres de la cadena apuntada por src en la memoria apuntada por dest.
- * input: dest, src, n
- * output: dirección de dest
+ * 
+ * @param dest: Cadena destino.
+ * @param src: Cadena orígen.
+ * @param n: Número de carácteres a copiar.
+ * @return: Dirección de dest.
  */
 char *my_strncpy(char *dest, const char *src, size_t n)
 {
@@ -98,8 +106,10 @@ char *my_strncpy(char *dest, const char *src, size_t n)
 
 /**
  * Añade la cadena apuntada por src a la cadena apuntada por dest.
- * input: dest, src
- * output: dirección de dest
+ * 
+ * @param dest: Cadena destino.
+ * @param src: Cadena orígen.
+ * @return: Dirección de dest.
  */
 char *my_strcat(char *dest, const char *src)
 {
@@ -112,8 +122,10 @@ char *my_strcat(char *dest, const char *src)
 
 /**
  * Escanea la cadena apuntada por str buscando la primera ocurrencia del carácter c.
- * input: s, c
- * output: dirección del string a partir de la primera ocurrencia, NULL de no ser encontrado
+ * 
+ * @param s: Cadena que recorreremos.
+ * @param c: Carácter buscado.
+ * @return: Dirección de la cadena a partir de la primera ocurrencia, NULL de lo contrario.
  */
 char *my_strchr(const char *s, int c)
 {
@@ -143,8 +155,9 @@ char *my_strchr(const char *s, int c)
 
 /**
  * Reserva espacio para una variable de tipo struct my_stack.
- * input: size
- * output: puntero a stack, NULL de producirse un error
+ * 
+ * @param size: Valor del tamaño de la data que guardaremos.
+ * @return: Puntero a la pila, NULL de producirse un error.
  */
 struct my_stack *my_stack_init(int size)
 {
@@ -165,8 +178,10 @@ struct my_stack *my_stack_init(int size)
 
 /**
  * Inserta un nuevo nodo en los elementos de la pila.
- * input: stack, data
- * output: EXITO, FALLO de producirse un error
+ * 
+ * @param stack: Pila al que le insertaremos un nuevo elemento.
+ * @param data: Nuevo elemento a insertar.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int my_stack_push(struct my_stack *stack, void *data)
 {
@@ -193,8 +208,9 @@ int my_stack_push(struct my_stack *stack, void *data)
 
 /**
  * Elimina el nodo superior de los elementos de la pila.
- * input: stack
- * output: data
+ * 
+ * @param stack: Pila de la que sacaremos el último elemento.
+ * @return: Data extraída.
  */
 void *my_stack_pop(struct my_stack *stack)
 {
@@ -212,8 +228,9 @@ void *my_stack_pop(struct my_stack *stack)
 
 /**
  * Recorre la pila y retorna el número de nodos totales que hay en los elementos de la pila.
- * input: stack
- * output: length
+ * 
+ * @param stack: Pila que recorreremos.
+ * @return: Tamaño de la pila, el número de nodos que tiene.
  */
 int my_stack_len(struct my_stack *stack)
 {
@@ -232,9 +249,10 @@ int my_stack_len(struct my_stack *stack)
 
 /**
  * Recorre la pila liberando la memoria que habíamos reservado para cada uno de los datos y la de cada nodo.
- * Finalmente libera también la memoria que ocupa el struck my_stack.
- * input: stack
- * output: bytes liberados
+ * Finalmente libera también la memoria que ocupa el struct my_stack.
+ * 
+ * @param stack: Pila que eliminaremos.
+ * @return: Bytes liberados.
  */
 int my_stack_purge(struct my_stack *stack)
 {
@@ -261,8 +279,10 @@ int my_stack_purge(struct my_stack *stack)
 
 /**
  * Almacena los datos de la pila en el fichero indicado por filename.
- * input: stack, filename
- * output: cont (número de elementos almacenados)
+ * 
+ * @param stack: Pila que guardaremos.
+ * @param filename: Nombre del fichero donde almacenaremos la pila.
+ * @return: Número de elementos almacenados en el fichero.
  */
 int my_stack_write(struct my_stack *stack, char *filename)
 {
@@ -327,8 +347,9 @@ int my_stack_write(struct my_stack *stack, char *filename)
 
 /**
  * Lee los datos de la pila almacenados en el fichero indicado por filename.
- * input: filename
- * output: puntero a stack, NULL de producirse un error
+ * 
+ * @param filename: Nombre del fichero del que leeremos la pila.
+ * @return: Puntero a la pila leída, NULL de producirse un error.
  */
 struct my_stack *my_stack_read(char *filename)
 {
@@ -391,4 +412,3 @@ struct my_stack *my_stack_read(char *filename)
 
     return stack;
 }
-

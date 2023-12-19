@@ -1,20 +1,18 @@
 /* @author Daniel Giralt Pascual */
 
 #include "my_lib.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-
-#define DEBUG 0
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct my_stack *stack;
-
 void *worker(void *ptr);
 
 
 /**
  * Main del programa.
+ * 
+ * @param argc: Número de tokens de la línea de ejecución.
+ * @param argv: Array con los diferentes tokens.
+ * @return EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int main(int argc,char *argv[])
 {
@@ -26,8 +24,9 @@ int main(int argc,char *argv[])
 
     fprintf(stderr,"Threads: %d, Iterations: %d\n", NUM_THREADS, N);
 
+
     int *data;
-    if ((stack = my_stack_read(argv[1])) == NULL)     //La creamos
+    if ((stack = my_stack_read(argv[1])) == NULL)
     {
         if ((stack = my_stack_init(sizeof(int))) == NULL)
         {
@@ -35,8 +34,11 @@ int main(int argc,char *argv[])
         }
 
         fprintf(stderr, "stack->size: %d\n", stack->size);
-        fprintf(stderr, "initial stack length: %d\n", my_stack_len(stack));
-        #if !DEBUG
+
+        #if DEBUG
+            fprintf(stderr, "original stack length: %d\n", my_stack_len(stack));
+        #else
+            fprintf(stderr, "initial stack length: %d\n", my_stack_len(stack));
             fprintf(stderr, "initial stack content:\n");
         #endif
 
@@ -60,7 +62,7 @@ int main(int argc,char *argv[])
         #endif
         fprintf(stderr, "new stack length: %d\n\n", my_stack_len(stack));
     }
-    else if (my_stack_len(stack) < NUM_THREADS)     //La rellenamos
+    else if (my_stack_len(stack) < NUM_THREADS)
     {
         int items = my_stack_len(stack);
         fprintf(stderr, "initial stack length: %d\n", items);

@@ -1,17 +1,14 @@
 /* @author Daniel Giralt Pascual */
 
-/* lib.h librería con las funciones equivalentes a las
-de <string.h> y las funciones y estructuras para el
-manejo de una pila */
-
-#include <stdio.h>     /* para printf en depurarión */
-#include <string.h>    /* para funciones de strings  */
-#include <stdlib.h>    /* Funciones malloc(), free(), y valor NULL */
-#include <fcntl.h>     /* Modos de apertura de función open()*/
-#include <sys/stat.h>  /* Permisos función open() */
-#include <sys/types.h> /* Definiciones de tipos de datos como size_t*/
-#include <unistd.h>    /* Funciones read(), write(), close()*/
-#include <errno.h>     /* COntrol de errores (errno) */
+//Librerías
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
 
 
 //constantes
@@ -22,7 +19,21 @@ manejo de una pila */
 #define ROJO_T      "\x1b[31m"
 
 
-//declaraciones funciones libreria string
+//Estructuras
+struct my_stack_node
+{
+    void *data;
+    struct my_stack_node *next;
+};
+
+struct my_stack
+{
+    int size;
+    struct my_stack_node *top;
+};
+
+
+//Funciones String
 size_t my_strlen(const char *str);
 int my_strcmp(const char *str1, const char *str2);
 char *my_strcpy(char *dest, const char *src);
@@ -31,21 +42,7 @@ char *my_strcat(char *dest, const char *src);
 char *my_strchr(const char *s, int c);
 
 
-//estructuras para gestor de pila
-struct my_stack_node            // nodo de la pila (elemento)
-{
-    void *data;
-    struct my_stack_node *next;
-};
-
-struct my_stack                 // pila
-{
-    int size;                   // tamaño de data, nos lo pasarán por parámetro
-    struct my_stack_node *top;  // apunta al nodo de la parte superior
-};  
-
-
-//declaraciones funciones gestor de pila
+//Funciones Pila
 struct my_stack *my_stack_init(int size);
 int my_stack_push(struct my_stack *stack, void *data);
 void *my_stack_pop(struct my_stack *stack);

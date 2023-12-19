@@ -1,12 +1,14 @@
 /* @author Daniel Giralt Pascual */
 
 #include "my_lib.h"
-#include <stdio.h>
-#include <limits.h>
 
 
 /**
  * Main del programa.
+ * 
+ * @param argc: Número de tokens de la línea de ejecución.
+ * @param argv: Array con los diferentes tokens.
+ * @return EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int main(int argc, char *argv[])
 {

@@ -1,25 +1,27 @@
 /* @author Daniel Giralt Pascual */
 
-/* lib.h librería con las funciones equivalentes a las
-de <string.h> y las funciones y estructuras para el
-manejo de una pila */
+//Librerías
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <limits.h>
 
-#include <stdio.h>     /* para printf en depurarión */
-#include <string.h>    /* para funciones de strings  */
-#include <stdlib.h>    /* Funciones malloc(), free(), y valor NULL */
-#include <fcntl.h>     /* Modos de apertura de función open()*/
-#include <sys/stat.h>  /* Permisos función open() */
-#include <sys/types.h> /* Definiciones de tipos de datos como size_t*/
-#include <unistd.h>    /* Funciones read(), write(), close()*/
-#include <errno.h>     /* COntrol de errores (errno) */
 
-
-//constantes
+//Constantes
 #define NUM_THREADS 10
 #define N 1000000
 
 #define EXITO 0
 #define FALLO -1
+
+#define DEBUG 0
 
 #define RESET       "\x1b[0m"
 #define ROJO_T      "\x1b[31m"
@@ -27,21 +29,21 @@ manejo de una pila */
 #define NARANJA_T   "\x1B[38;2;255;128;0m"
 
 
-//estructuras para gestor de pila
-struct my_stack_node            // nodo de la pila (elemento)
+//Estructuras
+struct my_stack_node
 {
     void *data;
     struct my_stack_node *next;
 };
 
-struct my_stack                 // pila
+struct my_stack
 {
-    int size;                   // tamaño de data, nos lo pasarán por parámetro
-    struct my_stack_node *top;  // apunta al nodo de la parte superior
-};  
+    int size;
+    struct my_stack_node *top;
+};
 
 
-//declaraciones funciones gestor de pila
+//Funciones
 struct my_stack *my_stack_init(int size);
 int my_stack_push(struct my_stack *stack, void *data);
 void *my_stack_pop(struct my_stack *stack);
