@@ -15,7 +15,7 @@
 #define EXITO 0
 #define FALLO -1
 
-#define DEBUG1 1
+#define DEBUGN1 1
 
 #define RESET       "\033[0m"
 #define NEGRO_T     "\x1b[30m"
@@ -31,7 +31,6 @@
 #define BLANCO_T    "\x1b[97m"
 #define NEGRITA     "\x1b[1m"
 
-char line[COMMAND_LINE_SIZE];
 const char PROMPT = '$';
 
 

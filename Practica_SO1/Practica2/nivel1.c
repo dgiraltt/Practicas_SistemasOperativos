@@ -1,13 +1,18 @@
 /* @author Daniel Giralt Pascual */
 
 #include "nivel1.h"
+static int n_tokens;
 
 
 /**
  * Main del programa.
+ * 
+ * @return EXITO.
  */
 int main()
 {
+    char line[COMMAND_LINE_SIZE];
+
     while (1)
     {
         if (read_line(line))
@@ -21,8 +26,8 @@ int main()
 
 
 /**
-* Imprime el promt de la línea de comandos.
-*/
+ * Imprime el promt de la línea de comandos.
+ */
 void imprimir_prompt()
 {
     fprintf(stderr, ROSA_T"%c "RESET, PROMPT);
@@ -31,6 +36,9 @@ void imprimir_prompt()
 
 /**
  * Lee la línea de comandos del shell.
+ * 
+ * @param line: Cadena de carácteres en la que leeremos la línea de comandos.
+ * @return: Línea de comandos guardada en line.
  */
 char *read_line(char *line)
 {
@@ -48,44 +56,43 @@ char *read_line(char *line)
         }
     }
 
-    //Quitamos salto de línea
-    char *aux = strchr(line, '\n');
-    if (aux)
-    {
-        *aux = '\0';
-    }
-    
+    line[strlen(line)-1] = '\0';
+
     return line;
 }
 
 
 /**
  * Ejecuta la instrucción del comando.
+ * 
+ * @param line: Línea del comando a ejecutar.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int execute_line(char *line)
 {
     char *args[ARGS_SIZE];
-    parse_args(args, line);
-    
-    if (args[0] != NULL)
+    if ((n_tokens = parse_args(args, line)) == 0)
     {
-        check_internal(args);
-        return EXITO;
+        return FALLO;
     }
-
-    return FALLO;
+    
+    return check_internal(args);
 }
 
 
 /**
  * Trocea la línea con los argumentos del comando.
+ * 
+ * @param args: Array de cadenas de carácteres.
+ * @param line: Línea del comando a ejecutar.
+ * @return: Número de tokens.
  */
 int parse_args(char **args, char *line)
 {
     int nTokensAux = 0;
     char *token;
 
-    #if DEBUG1
+    #if DEBUGN1
         int corregido = 0;
     #endif
 
@@ -93,14 +100,14 @@ int parse_args(char **args, char *line)
     while(token != NULL)
     {
         args[nTokensAux] = token;
-        #if DEBUG1
+        #if DEBUGN1
             fprintf(stderr, GRIS_T"[parse_args()→ token %i: %s]\n"RESET, nTokensAux, args[nTokensAux]);
         #endif
         
         if(args[nTokensAux][0] == '#')
         {
             token = NULL;
-            #if DEBUG1
+            #if DEBUGN1
                 corregido = 1;
             #endif
         }
@@ -112,7 +119,7 @@ int parse_args(char **args, char *line)
     }
 
     args[nTokensAux] = NULL;
-    #if DEBUG1
+    #if DEBUGN1
         if (!corregido)
         {
             fprintf(stderr, GRIS_T"[parse_args()→ token %i: %s]\n"RESET, nTokensAux, args[nTokensAux]);
@@ -129,54 +136,35 @@ int parse_args(char **args, char *line)
 
 /**
  * Comprueba si la instrucción pasada es un comando interno.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario 
+ * y 1 si no es un comando interno.
  */
 int check_internal(char **args)
 {
-    if (args[0] == NULL)
+    if (args[0] == NULL) return FALLO;
+    else if (!strcmp(args[0], "cd")) return internal_cd(args);
+    else if (!strcmp(args[0], "export")) return internal_export(args);
+    else if (!strcmp(args[0], "source")) return internal_source(args);
+    else if (!strcmp(args[0], "jobs")) return internal_jobs(args);
+    else if (!strcmp(args[0], "fg")) return internal_fg(args);
+    else if (!strcmp(args[0], "bg")) return internal_bg(args);
+    else if (!strcmp(args[0], "exit"))
     {
-        return FALLO;
-    }
-    else if (!strcmp(args[0], "cd"))
-    {
-        internal_cd(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "export"))
-    {
-        internal_export(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "source"))
-    {
-        internal_source(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "jobs"))
-    {
-        internal_jobs(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "fg"))
-    {
-        internal_fg(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "bg"))
-    {
-        internal_bg(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "exit"))
-    {
+        fprintf(stderr, GRIS_T NEGRITA"¡HASTA LA PRÓXIMA!\n"RESET);
         exit(0);
     }
 
-    return FALLO;
+    return 1;
 }
 
 
 /**
  * Cambia de directorio.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_cd(char **args)
 {
@@ -187,6 +175,9 @@ int internal_cd(char **args)
 
 /**
  * Asigna valores a variables de entorno.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_export(char **args)
 {
@@ -197,6 +188,9 @@ int internal_export(char **args)
 
 /**
  * Ejecuta un fichero de la línea de comandos.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_source(char **args)
 {
@@ -207,6 +201,9 @@ int internal_source(char **args)
 
 /**
  * Muestra el PID de los procesos que no estén en foreground.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_jobs(char **args)
 {
@@ -217,6 +214,9 @@ int internal_jobs(char **args)
 
 /**
  * Lleva los procesos más recientes a primer plano.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_fg(char **args)
 {
@@ -227,6 +227,9 @@ int internal_fg(char **args)
 
 /**
  * Enseña los procesos parados o en segundo plano.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_bg(char **args)
 {

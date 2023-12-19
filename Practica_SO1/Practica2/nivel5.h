@@ -21,11 +21,11 @@
 #define EXITO 0
 #define FALLO -1
 
-#define DEBUG1 0
-#define DEBUG2 0
-#define DEBUG3 0
-#define DEBUG4 0
-#define DEBUG5 1
+#define DEBUGN1 0
+#define DEBUGN2 0
+#define DEBUGN3 0
+#define DEBUGN4 0
+#define DEBUGN5 1
 
 #define RESET       "\033[0m"
 #define NEGRO_T     "\x1b[30m"
@@ -41,12 +41,11 @@
 #define BLANCO_T    "\x1b[97m"
 #define NEGRITA     "\x1b[1m"
 
-char line[COMMAND_LINE_SIZE];
 char *user, *home;
 const char PROMPT = '$';
 
 
-//
+//Estructuras
 struct info_job
 {
    pid_t pid;
@@ -68,11 +67,13 @@ int internal_fg(char **args);
 int internal_bg(char **args); 
 
 int cd_avanzado(char **args);
+
 void reaper(int signum);
 void ctrlc(int signum);
 void ctrlz(int signum);
+
 int is_background(char **args);
 
-int jobs_list_add(pid_t pid,char status, char *cmd);
+int jobs_list_add(pid_t pid, char status, char *cmd);
 int jobs_list_find(pid_t pid);
 int jobs_list_remove(int pos);

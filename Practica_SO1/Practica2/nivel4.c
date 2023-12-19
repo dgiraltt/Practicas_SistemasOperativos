@@ -3,11 +3,15 @@
 #include "nivel4.h"
 static int n_tokens;
 static char mi_shell[COMMAND_LINE_SIZE]; 
-static struct info_job jobs_list [N_JOBS];
+static struct info_job jobs_list[N_JOBS];
 
 
 /**
  * Main del programa.
+ * 
+ * @param argc: Número de tokens de la línea de ejecución.
+ * @param argv: Array con los diferentes tokens.
+ * @return EXITO.
  */
 int main(int argc, char *argv[])
 {
@@ -18,7 +22,9 @@ int main(int argc, char *argv[])
     jobs_list[0].status = 'N';
     memset(jobs_list[0].cmd, '\0', COMMAND_LINE_SIZE);
 
+    char line[COMMAND_LINE_SIZE];
     strcpy(mi_shell, argv[0]);
+    
     while (1)
     {
         if (read_line(line))
@@ -32,11 +38,11 @@ int main(int argc, char *argv[])
 
 
 /**
-* Imprime el promt de la línea de comandos.
-*/
+ * Imprime el promt de la línea de comandos.
+ */
 void imprimir_prompt()
 {
-    #if DEBUG1 || DEBUG2
+    #if DEBUGN1 || DEBUGN2
         fprintf(stderr, ROSA_T"%c "RESET, PROMPT);
     #else
         user = getenv("USER");
@@ -56,6 +62,9 @@ void imprimir_prompt()
 
 /**
  * Lee la línea de comandos del shell.
+ * 
+ * @param line: Cadena de carácteres en la que leeremos la línea de comandos.
+ * @return: Línea de comandos guardada en line.
  */
 char *read_line(char *line)
 {
@@ -73,12 +82,7 @@ char *read_line(char *line)
         }
     }
 
-    //Quitamos salto de línea
-    char *aux = strchr(line, '\n');
-    if (aux)
-    {
-        *aux = '\0';
-    }
+    line[strlen(line)-1] = '\0';
     
     return line;
 }
@@ -86,6 +90,9 @@ char *read_line(char *line)
 
 /**
  * Ejecuta la instrucción del comando.
+ * 
+ * @param line: Línea del comando a ejecutar.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int execute_line(char *line)
 {
@@ -93,12 +100,12 @@ int execute_line(char *line)
     strcpy(lineAux, line);
     
     char *args[ARGS_SIZE];
-    if ((n_tokens = parse_args(args, lineAux)) < 1)
+    if ((n_tokens = parse_args(args, lineAux)) == 0)
     {
         return FALLO;
     }
 
-    if (check_internal(args) == 0)  //Comando interno
+    if (check_internal(args) < 1)
     {
         return EXITO;
     }
@@ -108,24 +115,23 @@ int execute_line(char *line)
     jobs_list[0].status = 'E';
 
     pid_t id = fork();
-    if (id == 0)        //Hijo
+    if (id == 0)
     {
         signal(SIGCHLD, SIG_DFL);
         signal(SIGINT, SIG_IGN);
 
         if (execvp(args[0], args) < 0)
         {
-            fprintf(stderr, ROJO_T"execvp: %s\n"RESET, strerror(errno));
+            //fprintf(stderr, ROJO_T"execvp: %s\n"RESET, strerror(errno));
             exit(-1);
         }
-
         exit(0);
     }
-    else if (id > 0)    //Padre
+    else if (id > 0)
     {
-        #if DEBUG4
-            fprintf(stderr, GRIS_T"[execute_line(): PID padre: %d (%s)]\n"RESET, getpid(), mi_shell);
-            fprintf(stderr, GRIS_T"[execute_line(): PID hijo: %d (%s)]\n"RESET, id, line);
+        #if DEBUGN3 || DEBUGN4
+            fprintf(stderr, GRIS_T"[execute_line()→ PID padre: %d (%s)]\n"RESET, getpid(), mi_shell);
+            fprintf(stderr, GRIS_T"[execute_line()→ PID hijo: %d (%s)]\n"RESET, getpid(), jobs_list[0].cmd);
         #endif
         
         jobs_list[0].pid = id;
@@ -140,7 +146,7 @@ int execute_line(char *line)
     else
     {
         fprintf(stderr, ROJO_T"fork: %s\n"RESET, strerror(errno));
-        exit(-1);
+        exit(-2);
     }
 
     return EXITO;
@@ -149,13 +155,17 @@ int execute_line(char *line)
 
 /**
  * Trocea la línea con los argumentos del comando.
+ * 
+ * @param args: Array de cadenas de carácteres.
+ * @param line: Línea del comando a ejecutar.
+ * @return: Número de tokens.
  */
 int parse_args(char **args, char *line)
 {
     int nTokensAux = 0;
     char *token;
 
-    #if DEBUG1
+    #if DEBUGN1
         int corregido = 0;
     #endif
 
@@ -163,14 +173,14 @@ int parse_args(char **args, char *line)
     while(token != NULL)
     {
         args[nTokensAux] = token;
-        #if DEBUG1
+        #if DEBUGN1
             fprintf(stderr, GRIS_T"[parse_args()→ token %i: %s]\n"RESET, nTokensAux, args[nTokensAux]);
         #endif
         
         if(args[nTokensAux][0] == '#')
         {
             token = NULL;
-            #if DEBUG1
+            #if DEBUGN1
                 corregido = 1;
             #endif
         }
@@ -182,7 +192,7 @@ int parse_args(char **args, char *line)
     }
 
     args[nTokensAux] = NULL;
-    #if DEBUG1
+    #if DEBUGN1
         if (!corregido)
         {
             fprintf(stderr, GRIS_T"[parse_args()→ token %i: %s]\n"RESET, nTokensAux, args[nTokensAux]);
@@ -199,54 +209,35 @@ int parse_args(char **args, char *line)
 
 /**
  * Comprueba si la instrucción pasada es un comando interno.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario 
+ * y 1 si no es un comando interno.
  */
 int check_internal(char **args)
 {
-    if (args[0] == NULL)
+    if (args[0] == NULL) return FALLO;
+    else if (!strcmp(args[0], "cd")) return internal_cd(args);
+    else if (!strcmp(args[0], "export")) return internal_export(args);
+    else if (!strcmp(args[0], "source")) return internal_source(args);
+    else if (!strcmp(args[0], "jobs")) return internal_jobs(args);
+    else if (!strcmp(args[0], "fg")) return internal_fg(args);
+    else if (!strcmp(args[0], "bg")) return internal_bg(args);
+    else if (!strcmp(args[0], "exit"))
     {
-        return FALLO;
-    }
-    else if (!strcmp(args[0], "cd"))
-    {
-        internal_cd(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "export"))
-    {
-        internal_export(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "source"))
-    {
-        internal_source(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "jobs"))
-    {
-        internal_jobs(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "fg"))
-    {
-        internal_fg(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "bg"))
-    {
-        internal_bg(args);
-        return EXITO;
-    }
-    else if(!strcmp(args[0], "exit"))
-    {
+        fprintf(stderr, GRIS_T NEGRITA"¡HASTA LA PRÓXIMA!\n"RESET);
         exit(0);
     }
 
-    return FALLO;
+    return 1;
 }
 
 
 /**
  * Cambia de directorio.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int internal_cd(char **args)
 {
@@ -273,7 +264,7 @@ int internal_cd(char **args)
     }
 
 
-    #if DEBUG2
+    #if DEBUGN2
         char cwd[COMMAND_LINE_SIZE];
         if (getcwd(cwd, COMMAND_LINE_SIZE) == NULL)
         {
@@ -288,6 +279,9 @@ int internal_cd(char **args)
 
 /**
  * Asigna valores a variables de entorno.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int internal_export(char **args)
 {
@@ -295,7 +289,7 @@ int internal_export(char **args)
 
     if ((nombre != NULL) && (valor != NULL))
     {
-        #if DEBUG2
+        #if DEBUGN2
             fprintf(stderr, GRIS_T"[internal_export()→ nombre: %s]\n"RESET, nombre);
             fprintf(stderr, GRIS_T"[internal_export()→ valor: %s]\n"RESET, valor);
         #endif
@@ -306,13 +300,13 @@ int internal_export(char **args)
         }
         else
         {
-            #if DEBUG2
+            #if DEBUGN2
                 fprintf(stderr, GRIS_T"[internal_export()→ antiguo valor para %s: %s]\n"RESET, nombre, getenv(nombre));
             #endif
 
             setenv(nombre, valor, 1);
             
-            #if DEBUG2
+            #if DEBUGN2
                 fprintf(stderr, GRIS_T"[internal_export()→ nuevo valor para %s: %s]\n"RESET, nombre, valor);
             #endif
 
@@ -325,7 +319,7 @@ int internal_export(char **args)
     }
     else
     {
-        #if DEBUG2
+        #if DEBUGN2
             fprintf(stderr, GRIS_T"[internal_export()→ nombre: %s]\n"RESET, nombre);
             fprintf(stderr, GRIS_T"[internal_export()→ valor = (null)]\n"RESET);
         #endif
@@ -339,6 +333,9 @@ int internal_export(char **args)
 
 /**
  * Ejecuta un fichero de la línea de comandos.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int internal_source(char **args)
 {
@@ -366,7 +363,7 @@ int internal_source(char **args)
             }
         }
 
-        #if DEBUG3
+        #if DEBUGN3
             fprintf(stderr, GRIS_T"[internal_source()→ LINE: %s]\n"RESET, linea);
         #endif
         
@@ -387,30 +384,39 @@ int internal_source(char **args)
 
 /**
  * Muestra el PID de los procesos que no estén en foreground.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_jobs(char **args)
 {
-    printf(GRIS_T "[internal_jobs()→ Esta función mostrará el PID de los procesos que no estén en foreground]\n" RESET);
+    fprintf(stderr, GRIS_T"[internal_jobs()→ Esta función mostrará el PID de los procesos que no estén en foreground]\n"RESET);
     return EXITO;
 }
 
 
 /**
  * Lleva los procesos más recientes a primer plano.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_fg(char **args)
 {
-    printf(GRIS_T "[internal_fg()→ Esta función lleva los procesos más recientes a primer plano]\n" RESET);
+    fprintf(stderr, GRIS_T"[internal_fg()→ Esta función lleva los procesos más recientes a primer plano]\n"RESET);
     return EXITO;
 }
 
 
 /**
  * Enseña los procesos parados o en segundo plano.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO.
  */
 int internal_bg(char **args)
 {
-    printf(GRIS_T "[internal_bg()→ Esta función enseña los procesos parados o en segundo plano]\n" RESET);
+    fprintf(stderr, GRIS_T"[internal_bg()→ Esta función enseña los procesos parados o en segundo plano]\n"RESET);
     return EXITO;
 }
 
@@ -422,26 +428,44 @@ int internal_bg(char **args)
  * Función auxiliar que permite tratar un directorio pasado entre comillas
  * dobles, simple, y el carácter \, permitiendo acceder a directorios que
  * contienen un espacio (" ") en su nombre.
+ * 
+ * @param args: Tokens de la línea de comandos.
+ * @return: EXITO tras la correcta ejecución, FALLO de lo contrario.
  */
 int cd_avanzado(char **args)
 {
     char *token = args[1], *tokenAux;
     char comillas;
+    int i, nTokensAux;
 
     if (strchr(token, 92) != NULL)          /*92 es \ en ASCII*/
     {
-        for (int i=0; i<strlen(token); i++)
+        if ((tokenAux = args[2]) == NULL)
         {
-            if (token[i] == 92)
-            {
-                token[i] = ' ';
-            }
+            token[strlen(token)-1] = ' ';
+            return EXITO;
         }
-        strcat(token, args[2]);
+        
+        nTokensAux = 3;
+        while ((nTokensAux <= n_tokens) && (strchr(tokenAux, 92) != NULL))
+        {
+            token[strlen(token)] = ' ';
+            tokenAux = args[nTokensAux++];
+        }
+        token[strlen(token)] = ' ';
+        
+        int aux = 0;
+        for (i=0; i<(strlen(token)-n_tokens+2); i++)
+        {
+            if (token[i+aux] == 92) aux++;
+            token[i] = token[i+aux];
+        }
+        token[i] = '\0';
         
         return EXITO;
+
     }
-    else if (strchr(token, 34) != NULL)     /*34 es "" en ASCII*/
+    else if (strchr(token, 34) != NULL)     /*34 es " en ASCII*/
     {
         comillas = 34;
     }
@@ -455,8 +479,7 @@ int cd_avanzado(char **args)
     }
 
 
-    int i;
-    if (token[strlen(token)-1] == comillas)     //1 sola palabra
+    if (token[strlen(token)-1] == comillas)
     {
         for (i=0; i<(strlen(token)-2); i++)
         {
@@ -467,22 +490,22 @@ int cd_avanzado(char **args)
         return EXITO;
     }
 
+
     if ((tokenAux = args[2]) == NULL)
     {
-        fprintf(stderr, "ERROR: Faltan comillas\n");
+        fprintf(stderr, ROJO_T"cd_avanzado: Faltan comillas al cerrar\n"RESET);
         return FALLO;
     }
 
-
-    int nTokensAux = 3;
+    nTokensAux = 3;
     while ((nTokensAux <= n_tokens) && (strchr(tokenAux, comillas) == NULL))
     {
         token[strlen(token)] = ' ';
         tokenAux = args[nTokensAux++];
 
-        if ((nTokensAux > n_tokens))
+        if (nTokensAux > n_tokens)
         {
-            fprintf(stderr, "ERROR: Faltan comillas\n");
+            fprintf(stderr, ROJO_T"cd avanzado: Faltan comillas al cerrar\n"RESET);
             return FALLO;
         }
     }
@@ -498,6 +521,7 @@ int cd_avanzado(char **args)
 }
 
 
+
 /**
  * Manejador propio para la señal SIGCHLD.
  */
@@ -506,25 +530,28 @@ void reaper(int signum)
     signal(SIGCHLD, reaper);
     pid_t ended;
     int status;
+    char mensaje[3000] = "";
     
     while ((ended = waitpid(-1, &status, WNOHANG)) > 0)
     {
         if (WEXITSTATUS(status) != 0)
         {
-            fprintf(stderr, ROJO_T"%s: no se encontró la orden\n"RESET, jobs_list[0].cmd);
+            sprintf(mensaje, ROJO_T"%s: no se encontró la orden\n"RESET, jobs_list[0].cmd);
+            write(2, mensaje, strlen(mensaje));
         }
         
         if (ended == jobs_list[0].pid)
         {
-            #if DEBUG4
+            #if DEBUGN4
                 if (WIFSIGNALED(status))
                 {
-                    fprintf(stderr, GRIS_T"[reaper()→ Proceso hijo %d (%s) finalizado por la señal %d]\n"RESET, ended, jobs_list[0].cmd, status);
+                    sprintf(mensaje, GRIS_T"[reaper()→ Proceso hijo %d (%s) finalizado por la señal %d]\n"RESET, ended, jobs_list[0].cmd, status);
                 }
                 else
                 {
-                    fprintf(stderr, GRIS_T"[reaper()→ Proceso hijo %d (%s) finalizado con exit code 0]\n"RESET, ended, jobs_list[0].cmd);
+                    sprintf(mensaje, GRIS_T"[reaper()→ Proceso hijo %d (%s) finalizado con exit code %d]\n"RESET, ended, jobs_list[0].cmd, status);
                 }
+                write(2, mensaje, strlen(mensaje));
             #endif
 
             jobs_list[0].pid = 0;
@@ -543,9 +570,11 @@ void reaper(int signum)
 void ctrlc(int signum)
 {
     signal(SIGINT, ctrlc);
+    char mensaje[3000] = "";
     
-    #if DEBUG4
-        fprintf(stderr, GRIS_T"\n[ctrlc()→ Soy el proceso con PID %d (%s), el proceso en foreground es %d (%s)]\n"RESET, getpid(), mi_shell, jobs_list[0].pid, jobs_list[0].cmd);
+    #if DEBUGN4
+        sprintf(mensaje, GRIS_T"\n[ctrlc()→ Soy el proceso con PID %d (%s), el proceso en foreground es %d (%s)]\n"RESET, getpid(), mi_shell, jobs_list[0].pid, jobs_list[0].cmd);
+        write(2, mensaje, strlen(mensaje));
     #endif
 
     if (jobs_list[0].pid > 0)
@@ -554,25 +583,26 @@ void ctrlc(int signum)
         {
             kill(jobs_list[0].pid, SIGTERM);
             
-            #if DEBUG4
-                fprintf(stderr, GRIS_T"[ctrlc()→ Señal 15 enviada a %d (%s) por %d (%s)]"RESET, jobs_list[0].pid, jobs_list[0].cmd, getpid(), mi_shell);
+            #if DEBUGN4
+                sprintf(mensaje, GRIS_T"[ctrlc()→ Señal 15 enviada a %d (%s) por %d (%s)]"RESET, jobs_list[0].pid, jobs_list[0].cmd, getpid(), mi_shell);
             #endif
 
         }
         else
         {
-            #if DEBUG4
-                fprintf(stderr, GRIS_T"[ctrlc()→ Señal 15 no enviada a %d (%s) debido a que su proceso en foreground es el shell]"RESET, getpid(), mi_shell);
+            #if DEBUGN4
+                sprintf(mensaje, GRIS_T"[ctrlc()→ Señal 15 no enviada a %d (%s) debido a que su proceso en foreground es el shell]"RESET, getpid(), mi_shell);
             #endif
         }
     }
     else
     {
-        #if DEBUG4
-            fprintf(stderr, GRIS_T"[ctrlc()→ Señal 15 no enviada por %d (%s) debido a que no hay proceso en foreground]"RESET, getpid(), mi_shell);
+        #if DEBUGN4
+            sprintf(mensaje, GRIS_T"[ctrlc()→ Señal 15 no enviada por %d (%s) debido a que no hay proceso en foreground]"RESET, getpid(), mi_shell);
         #endif
     }
 
-    fprintf(stderr, "\n");
+    strcat(mensaje, "\n");
+    write(2, mensaje, strlen(mensaje));
     fflush(stdout);
 }
